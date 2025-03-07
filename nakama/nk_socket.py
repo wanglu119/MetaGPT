@@ -62,7 +62,7 @@ class NakamaSocket():
       print("### open ###")
       self.wsOpen = True
 
-      roomname = "mychannel"
+      roomname = self.client.session.channelName
       type = 1
       persistence = False
       hidden = False

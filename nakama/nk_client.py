@@ -51,6 +51,7 @@ class Session():
     def __init__(self, client, server_key):
         self.client = client
         self.set_basic(server_key)
+        self.channelName = ""
 
     def set_refresh_token(self, refresh_token):
         self.refresh_token = refresh_token

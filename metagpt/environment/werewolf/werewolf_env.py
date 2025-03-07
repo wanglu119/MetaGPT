@@ -13,6 +13,7 @@ from metagpt.schema import Message
 
 class WerewolfEnv(WerewolfExtEnv, Environment):
     round_cnt: int = Field(default=0)
+    chat: object = Field(default=None)
 
     def add_roles(self, roles: Iterable["Role"]):
         """增加一批在当前环境的角色
@@ -31,6 +32,10 @@ class WerewolfEnv(WerewolfExtEnv, Environment):
             # Because the content of the message may be repeated, for example, killing the same person in two nights
             # Therefore, a unique round_cnt prefix needs to be added so that the same message will not be automatically deduplicated when added to the memory.
             message.content = f"{self.round_cnt} | " + message.content
+
+        if self.chat:
+            self.chat.send_message({"id":message.id,"role":message.role, 
+                                    "sent_from":message.sent_from,"content":message.content})
         super().publish_message(message)
 
     async def run(self, k=1):
@@ -39,3 +44,6 @@ class WerewolfEnv(WerewolfExtEnv, Environment):
             for role in self.roles.values():
                 await role.run()
             self.round_cnt += 1
+
+    def set_nakama(self,chat):
+        self.chat = chat
