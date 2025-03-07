@@ -24,7 +24,7 @@ class Save(NighttimeWhispers):
 
         prompt_json["OUTPUT_FORMAT"][
             "RESPONSE"
-        ] = "根据主持人的指示，决定你是否想要拯救那个人。返回“拯救”或“放弃”。"
+        ] = "根据主持人的指示，决定你是否想要拯救那个人。返回“Save”或“Pass”。"
 
         return prompt_json
 
