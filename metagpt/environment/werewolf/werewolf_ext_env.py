@@ -189,6 +189,8 @@ class WerewolfExtEnv(ExtEnv):
             )
             for i, role in enumerate(role_objs)
         ]
+        if add_human:
+            players[assigned_role_idx].is_human = True
 
         if add_human:
             logger.info(f"You are assigned {players[assigned_role_idx].name}({players[assigned_role_idx].profile})")

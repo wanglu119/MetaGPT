@@ -3,6 +3,7 @@
 # @Desc   : MG Werewolf Env
 
 from typing import Iterable
+import json
 
 from pydantic import Field
 
@@ -35,15 +36,48 @@ class WerewolfEnv(WerewolfExtEnv, Environment):
 
         if self.chat:
             self.chat.send_message({"id":message.id,"role":message.role, 
-                                    "sent_from":message.sent_from,"content":message.content})
+                                    "sent_from":message.sent_from,"content":message.content,"step_idx":self.step_idx})
+            
         super().publish_message(message)
 
     async def run(self, k=1):
         """Process all Role runs by order"""
+        if self.chat:
+            pStatus = []
+            for p,s in self.players_state.items():
+                ps = {
+                    "name":p,
+                    "role": s[0],
+                    "status": s[1].value
+                }
+                for name,r in self.roles.items():
+                    if name == p :
+                        ps["is_human"] = r.is_human
+                    
+                pStatus.append(ps)
+
+            content = json.dumps(pStatus)
+            self.chat.send_message({"sent_from":"系统","content":content})
         for _ in range(k):
             for role in self.roles.values():
                 await role.run()
             self.round_cnt += 1
+        
+        if self.chat:
+            pStatus = []
+            for p,s in self.players_state.items():
+                ps = {
+                    "name":p,
+                    "role": s[0],
+                    "status": s[1].value
+                }
+                for name,r in self.roles.items():
+                    if name == p :
+                        ps["is_human"] = r.is_human
+                pStatus.append(ps)
+
+            content = json.dumps(pStatus)
+            self.chat.send_message({"sent_from":"系统","content":content})
 
     def set_nakama(self,chat):
         self.chat = chat

@@ -17,5 +17,13 @@ def viewModelPlayer():
   t.start()
   return jsonify({"status":"ok"})
 
+@app.route("/api/human_and_model_player",methods=["GET"])
+def humanAndModelPlayer():
+  channelName = request.args.get("channelName","mychannel")
+  t = threading.Thread(target=main,args=[channelName],kwargs={"add_human":True})
+  t.setDaemon(True)
+  t.start()
+  return jsonify({"status":"ok"})
+
 if __name__ == "__main__":
   app.run(host="0.0.0.0")
