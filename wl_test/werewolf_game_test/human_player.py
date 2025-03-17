@@ -11,8 +11,6 @@ async def _act(self):
     todo = self.rc.todo
 
     memories = self.get_all_memories()
-
-    print(self._send_msg,"---------------------------------------")
     
     input_instruction = f"""
     ## As a reminder, you have access to the following game history:

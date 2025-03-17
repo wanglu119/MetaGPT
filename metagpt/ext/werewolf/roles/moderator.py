@@ -66,7 +66,6 @@ class Moderator(BasePlayer):
     async def _parse_speak(self, memories):
         latest_msg = memories[-1]
         latest_msg_content = latest_msg.content
-
         match = re.search(r"Player[0-9]+", latest_msg_content[-10:])  # FIXME: hard code truncation
         target = match.group(0) if match else ""
 
@@ -123,6 +122,24 @@ class Moderator(BasePlayer):
                     )
                 )
 
+        step_idx = self.rc.env.step_idx % self.rc.env.per_round_steps
+        if step_idx == 18:
+            for i in range(len(self.rc.news)):
+                if i > 0:
+                    len(self.rc.news)
+                    n = self.rc.news[i]
+                    msg_content = n.content
+                    match = re.search(r"Player[0-9]+", msg_content[-10:])  # FIXME: hard code truncation
+                    target = match.group(0) if match else ""
+                    self.rc.env.step(
+                        EnvAction(
+                            action_type=EnvActionType.VOTE_KILL,
+                            player_name=n.sent_from,
+                            target_player_name=target,
+                        )
+                    )
+
+  
         return msg_content, restricted_to
 
     def _update_player_status(self, step_idx: int, player_current_dead: list[str]):
@@ -143,10 +160,11 @@ class Moderator(BasePlayer):
             news = self.rc.msg_buffer.pop_all()
         old_messages = [] if ignore_memory else self.rc.memory.get()
         for m in news:
-            if len(m.restricted_to) and self.profile not in m.restricted_to and self.name not in m.restricted_to:
-                # if the msg is not send to the whole audience ("") nor this role (self.profile or self.name),
-                # then this role should not be able to receive it and record it into its memory
-                continue
+            if isinstance(m, WwMessage):
+                if len(m.restricted_to) and self.profile not in m.restricted_to and self.name not in m.restricted_to:
+                    # if the msg is not send to the whole audience ("") nor this role (self.profile or self.name),
+                    # then this role should not be able to receive it and record it into its memory
+                    continue
             self.rc.memory.add(m)
         # add `MESSAGE_ROUTE_TO_ALL in n.send_to` make it to run `ParseSpeak`
         self.rc.news = [
@@ -155,12 +173,16 @@ class Moderator(BasePlayer):
             if (n.cause_by in self.rc.watch or self.profile in n.send_to or MESSAGE_ROUTE_TO_ALL in n.send_to)
             and n not in old_messages
         ]
-        return len(self.rc.news)
+
+        if len(self.rc.news) > 0:
+            return len(self.rc.news)
+        else:
+            return 1
 
     async def _think(self):
-        if self.winner:
+        if self.winner or self.rc.env.winner:
             self.rc.todo = AnnounceGameResult()
-            return
+            return True
 
         latest_msg = self.rc.memory.get()[-1]
         if latest_msg.role in ["User", "Human", self.profile]:

@@ -6,7 +6,6 @@ class InstructSpeak(Action):
     name: str = "InstructSpeak"
 
     async def run(self, step_idx, living_players, werewolf_players, player_hunted, player_current_dead):
-        print(step_idx,"------------------------------")
         instruction_info = STEP_INSTRUCTIONS.get(
             step_idx, {"content": "无法识别的指令.", "send_to": {}, "restricted_to": {}}   #{"content": "Unknown instruction.", "send_to": {}, "restricted_to": {}}
         )

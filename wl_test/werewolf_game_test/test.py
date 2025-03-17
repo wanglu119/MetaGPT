@@ -7,18 +7,16 @@ from nakama.nk_client import NakamaClient
 from nakama.nk_socket import NakamaSocket
 
 from metagpt.ext.werewolf.werewolf_game import WerewolfGame
-from metagpt.logs import logger
+from metagpt.logs import logger,define_log_level
 
 from human_player import prepare_human_player
 from functools import partial
 
 def _send_msg(sock, msg):
-    print("human to input: ",msg)
     sock.channel.send_message({"sent_from":"human_to_input","content":"请输入:"})
     while True:
         if sock.humanInput == "":
             time.sleep(1)
-            print("wait human input ---------------------------------")
             continue
 
         humanInput = sock.humanInput
@@ -80,6 +78,8 @@ async def start_game(
     game.run_project(game_setup)
 
     await game.run(n_round=n_round)
+
+    print("------------------------------------游戏结束了")
     
     
 def main(
@@ -93,6 +93,7 @@ def main(
     use_memory_selection: bool = False,
     new_experience_version: str = "",
 ):
+    logger = define_log_level("ERROR")
     asyncio.run(
       start_game(
           channelName,

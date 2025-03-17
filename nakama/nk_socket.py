@@ -31,7 +31,8 @@ class WSRequestHandler():
             del self.requests[cid]
  
 def on_error(ws,error):
-  print("ws on_error:",error)
+#   print("ws on_error:",error)
+    pass
 
 def on_close(ws,a,b):
   print('### closed ###')
@@ -72,7 +73,6 @@ class NakamaSocket():
       self.channel.join(roomname,type, persistence, hidden)
 
     def on_message(self,ws,message):
-      print("on_message:",message)
       jObj = json.loads(message)
       if jObj.get('cid') is not None:
           cid = jObj.pop('cid')

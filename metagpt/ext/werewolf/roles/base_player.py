@@ -60,10 +60,12 @@ class BasePlayer(Role):
             news = self.rc.msg_buffer.pop_all()
         old_messages = [] if ignore_memory else self.rc.memory.get()
         for m in news:
-            if len(m.restricted_to) and self.profile not in m.restricted_to and self.name not in m.restricted_to:
-                # if the msg is not send to the whole audience ("") nor this role (self.profile or self.name),
-                # then this role should not be able to receive it and record it into its memory
-                continue
+            if isinstance(m,WwMessage):
+                if len(m.restricted_to) and self.profile not in m.restricted_to and self.name not in m.restricted_to:
+                    # if the msg is not send to the whole audience ("") nor this role (self.profile or self.name),
+                    # then this role should not be able to receive it and record it into its memory
+                    continue
+  
             self.rc.memory.add(m)
         self.rc.news = [
             n for n in news if (n.cause_by in self.rc.watch or self.profile in n.send_to) and n not in old_messages
@@ -174,4 +176,4 @@ class BasePlayer(Role):
             exp.round_id = round_id
             exp.outcome = outcome
             exp.game_setup = game_setup
-        AddNewExperiences().run(experiences)
+        # AddNewExperiences().run(experiences)

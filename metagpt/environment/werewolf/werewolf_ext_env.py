@@ -62,7 +62,7 @@ class WerewolfExtEnv(ExtEnv):
     def _get_obs(self):
         return {
             "game_setup": self.game_setup,
-            "step_idx": self.step_idx,
+            "step_idx": self.step_idx % self.per_round_steps,
             "living_players": self.living_players,
             "werewolf_players": self.werewolf_players,  # currently, lack observation isolation
             "player_hunted": self.player_hunted,
@@ -279,10 +279,13 @@ class WerewolfExtEnv(ExtEnv):
     ):
         if not self._check_valid_role(witch_name, RoleType.WITCH.value):
             return
-        if not self._check_player_continue(player_name):
-            return
-
+        
         assert state in [RoleState.POISONED, RoleState.SAVED]
+
+        if state == RoleState.POISONED:
+            if not self._check_player_continue(player_name):
+                return
+        
         self._update_players_state([player_name], state)
         if state == RoleState.POISONED:
             self.player_poisoned = player_name
@@ -319,7 +322,6 @@ class WerewolfExtEnv(ExtEnv):
         if step_idx == 15:  # step no
             # night ends: after all special roles acted, process the whole night
             self.player_current_dead = []  # reset
-
             if self.player_hunted != self.player_protected and not self.is_hunted_player_saved:
                 self.player_current_dead.append(self.player_hunted)
             if self.player_poisoned:
@@ -333,4 +335,5 @@ class WerewolfExtEnv(ExtEnv):
             self.player_poisoned = None
         elif step_idx == 18:
             # updated use vote_kill_someone
-            pass
+            self.round_votes = {}
+

@@ -134,5 +134,6 @@ class Team(BaseModel):
             await self.env.run()
 
             logger.debug(f"max {n_round=} left.")
+        print("游戏进行了: ",n_round, "轮，仍未结束，系统自动停止了游戏运行。")
         self.env.archive(auto_archive)
         return self.env.history
