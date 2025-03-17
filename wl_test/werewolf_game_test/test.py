@@ -78,7 +78,7 @@ async def start_game(
     game.run_project(game_setup)
 
     await game.run(n_round=n_round)
-
+    sock.websocket.close()
     print("------------------------------------游戏结束了")
     
     

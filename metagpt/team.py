@@ -125,6 +125,7 @@ class Team(BaseModel):
         if idea:
             self.run_project(idea=idea, send_to=send_to)
 
+        maxRound = n_round
         while n_round > 0:
             if self.env.is_idle:
                 logger.debug("All roles are idle.")
@@ -134,6 +135,10 @@ class Team(BaseModel):
             await self.env.run()
 
             logger.debug(f"max {n_round=} left.")
-        print("游戏进行了: ",n_round, "轮，仍未结束，系统自动停止了游戏运行。")
+        from metagpt.environment import WerewolfEnv
+        if isinstance(self.env, WerewolfEnv):
+            if not self.env.winner:
+                if self.env.chat:
+                    self.chat.send_message({"sent_from":"系统","content":f"Game over! The game exceeds the system's max number of rounds {maxRound}"})
         self.env.archive(auto_archive)
         return self.env.history
