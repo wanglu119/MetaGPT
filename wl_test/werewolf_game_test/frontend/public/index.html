@@ -6,6 +6,16 @@
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
     <link rel="icon" href="<%= BASE_URL %>favicon.png">
     <title>Werewolf Game Demo</title>
+    <style>
+      body {
+        overflow-y: scroll; /* ????????? */
+        scrollbar-width: none; /* ??????Firefox? */
+        -ms-overflow-style: none; /* ??????IE/Edge? */
+      }
+      body::-webkit-scrollbar {
+        display: none; /* ??????Chrome/Safari/Opera? */
+      }
+    </style>
   </head>
   <body>
     <noscript>

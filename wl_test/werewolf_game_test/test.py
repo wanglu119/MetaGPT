@@ -42,7 +42,14 @@ async def start_game(
     client.session.token = resp["token"]
     client.session.channelName = channelName
     
+    def procControlMsg(msg:dict):
+        sentFrom = msg.get("sent_from","")
+        if sentFrom == 'page_control':
+            content = msg.get('content','')
+            game.env.gameStatus = content
+            
     sock = NakamaSocket(client=client)
+    sock.messageHandles.append(procControlMsg)
 
     def runNakama():
         sock.connect()

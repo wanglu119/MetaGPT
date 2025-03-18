@@ -61,6 +61,8 @@ class NakamaSocket():
 
         self.humanInput = ""
 
+        self.messageHandles = []
+
     def on_open(self,ws):
       print("### open ###")
       self.wsOpen = True
@@ -81,9 +83,11 @@ class NakamaSocket():
       else:
         jC = json.loads(jObj["channel_message"].pop("content","{}"))
         if jC.get("sent_from") is not None:
-            sentFrom = jC.pop("sent_from")
+            sentFrom = jC.get("sent_from","")
             if sentFrom == "human_to_output":
-                self.humanInput = jC.pop("content")
+                self.humanInput = jC.get("content","")
+            for mhandle in self.messageHandles:
+                mhandle(jC)
 
     def connect(self, loop=None):
         assert self.client.session.token is not None, 'You must set session.token'

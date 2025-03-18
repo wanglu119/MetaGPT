@@ -4,7 +4,7 @@ const GetNkHostname = ()=>{
     if(process.env.NODE_ENV ==="development") {
         host = `${process.env.VUE_APP_SERVER_NK_HOST}`
     } else {
-        host = document.location.origin
+        host = document.location.hostname
     }
     return host
 }
@@ -15,7 +15,7 @@ const GetApiHostname = ()=>{
     if(process.env.NODE_ENV ==="development") {
         host = `${process.env.VUE_APP_SERVER_API_HOST}`
     } else {
-        host = document.location.origin
+        host = document.location.hostname
     }
     return host
 }

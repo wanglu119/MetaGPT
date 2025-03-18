@@ -125,6 +125,7 @@ class Team(BaseModel):
         if idea:
             self.run_project(idea=idea, send_to=send_to)
 
+        from metagpt.environment import WerewolfEnv
         maxRound = n_round
         while n_round > 0:
             if self.env.is_idle:
@@ -133,12 +134,17 @@ class Team(BaseModel):
             n_round -= 1
             self._check_balance()
             await self.env.run()
-
             logger.debug(f"max {n_round=} left.")
-        from metagpt.environment import WerewolfEnv
+            if isinstance(self.env, WerewolfEnv):
+                if self.env.gameStatus == 'stop':
+                    break
+        
         if isinstance(self.env, WerewolfEnv):
+            if self.env.gameStatus == 'stop' and not self.env.winner:
+                if self.env.chat:
+                    self.env.chat.send_message({"sent_from":"game_over","content":f"Game over! 页面结束游戏"})
             if not self.env.winner:
                 if self.env.chat:
-                    self.chat.send_message({"sent_from":"系统","content":f"Game over! The game exceeds the system's max number of rounds {maxRound}"})
+                    self.env.chat.send_message({"sent_from":"game_over","content":f"Game over! The game exceeds the system's max number of rounds {maxRound}"})
         self.env.archive(auto_archive)
         return self.env.history

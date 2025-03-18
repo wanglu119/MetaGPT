@@ -4,6 +4,7 @@
 
 from typing import Iterable
 import json
+import time
 
 from pydantic import Field
 
@@ -15,6 +16,8 @@ from metagpt.schema import Message
 class WerewolfEnv(WerewolfExtEnv, Environment):
     round_cnt: int = Field(default=0)
     chat: object = Field(default=None)
+    gameStatus:str = Field(default="")
+    game_round_cnt: int = Field(default=0)
 
     def add_roles(self, roles: Iterable["Role"]):
         """增加一批在当前环境的角色
@@ -42,13 +45,15 @@ class WerewolfEnv(WerewolfExtEnv, Environment):
 
     async def run(self, k=1):
         """Process all Role runs by order"""
+        if self.step_idx % self.per_round_steps == 0:
+            self.game_round_cnt = self.game_round_cnt + 1
         if self.chat:
             pStatus = []
             for p,s in self.players_state.items():
                 ps = {
                     "name":p,
                     "role": s[0],
-                    "status": s[1].value
+                    "status": s[1].value,
                 }
                 for name,r in self.roles.items():
                     if name == p :
@@ -57,10 +62,22 @@ class WerewolfEnv(WerewolfExtEnv, Environment):
                 pStatus.append(ps)
 
             content = json.dumps(pStatus)
-            self.chat.send_message({"sent_from":"系统","content":content})
+            self.chat.send_message({"sent_from":"系统","content":content, "game_round_cnt":self.game_round_cnt,})
+
+        hasWin = False
+        if self.winner:
+            hasWin = True
         for _ in range(k):
             for role in self.roles.values():
                 await role.run()
+                if self.gameStatus == "pause":
+                    while True:
+                        if self.gameStatus != "pause":
+                            break
+                        else:
+                            time.sleep(1)
+                if self.gameStatus == "stop":
+                    return
             self.round_cnt += 1
         
         if self.chat:
@@ -69,7 +86,7 @@ class WerewolfEnv(WerewolfExtEnv, Environment):
                 ps = {
                     "name":p,
                     "role": s[0],
-                    "status": s[1].value
+                    "status": s[1].value,
                 }
                 for name,r in self.roles.items():
                     if name == p :
@@ -77,7 +94,10 @@ class WerewolfEnv(WerewolfExtEnv, Environment):
                 pStatus.append(ps)
 
             content = json.dumps(pStatus)
-            self.chat.send_message({"sent_from":"系统","content":content})
+            self.chat.send_message({"sent_from":"系统","content":content,"game_round_cnt":self.game_round_cnt,})
+
+        if hasWin:
+            self.gameStatus = "stop"
 
     def set_nakama(self,chat):
         self.chat = chat
