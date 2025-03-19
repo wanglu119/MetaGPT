@@ -1,16 +1,15 @@
 <template>
-    <q-page class="flex flex-center"  >
+    <q-page class="flex flex-center column" >
       <q-page-sticky position="top-right" :offset="[18, 18]">
         <q-avatar square color="primary" text-color="white">{{ gameRoundCnt }}</q-avatar>
       </q-page-sticky>
-      
       <div class="q-gutter-sm">
         <q-chip v-for="p in playerStatus" :key="p.name">
-            <q-avatar :color="p.status=='alive'?'green':'red'" text-color="white">{{ p.status }}</q-avatar>
+            <q-avatar :color="p.status=='alive'?'yellow':'red'" text-color="white" v-if="p.is_human">{{ p.status }}</q-avatar>
+            <q-avatar :color="p.status=='alive'?'green':'red'" text-color="white" v-else>{{ p.status }}</q-avatar>
             {{ p.name }}({{ p.role }})
         </q-chip>
       </div>
-      
       <q-scroll-area ref="scrollRef" style="height: 90vh; min-width: 100%;">
         <q-list bordered>
           <q-item v-for="msg in recvMsgs" :key="msg.msg_id" class="q-my-sm" clickable v-ripple>
@@ -26,27 +25,38 @@
             </q-item-section>
   
             <q-item-section side>
-             
+              
             </q-item-section>
           </q-item>
         </q-list>
       </q-scroll-area>
-      
+
+      <q-dialog v-model="showHumanInput" seamless position="right">
+        <div class="q-gutter-sm" style="width: 500px;">
+            <q-card bordered class="bg-grey-3">
+                <q-card-section>
+                    <q-input v-model="humanInput" label="请输入" @keypress.enter="toHumanInput"/>
+                </q-card-section>
+            </q-card>
+        </div>
+        </q-dialog>
+
       <w-game-control-btn />
+      
     </q-page>
   </template>
   
   <script lang="ts">
-  import { defineComponent,ref,onUnmounted,provide } from 'vue'
+  import { defineComponent,ref,onUnmounted,provide,computed } from 'vue'
   import Axios from 'axios'
-
-  import UtilApi from '@/services/util'
   
   import {Client,Socket,Session,Channel, ChannelMessage} from "@heroiclabs/nakama-js";
-  import { QScrollArea } from 'quasar'
+  import { QScrollArea } from 'quasar';
+
+  import UtilApi from '@/services/util'
 
   import WGameControlBtn from './GameControlBtn.vue'
-
+  
   interface WerewolfMsgContent {
     msg_id:string
     id:string
@@ -62,27 +72,38 @@
     name:string
     role:string
     status:string
+    is_human:boolean
   }
   
   export default defineComponent({
-    components:{
-      WGameControlBtn,
+    components: {
+        WGameControlBtn,
     },
     setup (props,{attrs}) {
+      const hasHuman = attrs.hasHuman as boolean
       const channelName = attrs.channelName as string
       const serverNkHostname = UtilApi.GetNkHostname()
       const serverApiHostname = UtilApi.GetApiHostname()
+
+      console.log(hasHuman,'------------------------------------------------')
+
       const scrollRef = ref<QScrollArea>()
       const useSSL = false; // Enable if server is run with an SSL certificate.
       const client = new Client("defaultkey", serverNkHostname, "7350", useSSL);
       const sockSession =  ref<Session>()
       const sock = ref<Socket>()
       const chat = ref<Channel>()
+  
       const timer = ref<number>()
   
       const recvMsgs = ref<WerewolfMsgContent[]>([])
       const playerStatus = ref<PlayerStatus[]>([])
+      const humanToInput = ref<string>("")
+      const humanInput = ref<string>("")
       const gameRoundCnt = ref<number>(0)
+      const showHumanInput = computed(()=>{
+        return humanToInput.value != ""
+      })
   
       const secure = false; // Enable if server is run with an SSL certificate 
       const trace = false;
@@ -93,7 +114,11 @@
       const hidden = false
 
       const startGame = async()=>{
-        await Axios.get(`http://${serverApiHostname}:5000/api/view_model_player?channelName=${channelName}`)
+        if(hasHuman) {
+            await Axios.get(`http://${serverApiHostname}:5000/api/human_and_model_player?channelName=${channelName}`)
+        } else {
+            await Axios.get(`http://${serverApiHostname}:5000/api/view_model_player?channelName=${channelName}`)
+        }
       }
   
       const auth = async() => {
@@ -129,6 +154,9 @@
                     playerStatus.value.push(pe)
                 }
                 gameRoundCnt.value = wMsg.game_round_cnt
+            } else if (wMsg.sent_from =="human_to_input") {
+                humanToInput.value = wMsg.content
+                console.log(humanToInput.value)
             } else {
                 const c = wMsg.content.indexOf("|")
                 if(c>0) {
@@ -158,7 +186,6 @@
             }
             
             
-  
             if(scrollRef.value) {
               scrollRef.value.setScrollPosition("vertical",10000)
             }
@@ -170,6 +197,16 @@
         auth()
       }catch(e) {
         console.log(e)
+      }
+
+      const toHumanInput = async()=>{
+        console.log(humanInput.value)
+        if(chat.value) {
+            await sock.value?.writeChatMessage(chat.value?.id,{"sent_from":"human_to_output","content": humanInput.value})
+        }
+        
+        humanInput.value = ""
+        humanToInput.value = ""
       }
       
   
@@ -192,9 +229,14 @@
       return {
         scrollRef,
         recvMsgs,
+        sock,
         chat,
         playerStatus,
+        humanToInput,
+        humanInput,
+        toHumanInput,
         gameRoundCnt,
+        showHumanInput,
       }
     }
   })
