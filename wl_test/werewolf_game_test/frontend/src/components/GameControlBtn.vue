@@ -9,7 +9,7 @@
                 {{ gameStatus?'暂停':'开始' }}
             </q-tooltip>
         </q-btn>
-        <q-btn fab icon="close" color="red" @click="stopGame">
+        <q-btn fab icon="close" color="red" @click="toStopGame">
             <q-tooltip>
                 退出
             </q-tooltip>
@@ -25,6 +25,7 @@ export default defineComponent({
     setup (props,{attrs}) {
         const sock = inject('sock') as Ref<Socket>
         const chat = inject('chat') as Ref<Channel>
+        const stopGame = attrs.stopGame as CallableFunction
         const gameStatus = ref<boolean>(true)
         
         const pauseStartGame = async()=>{
@@ -36,15 +37,14 @@ export default defineComponent({
             gameStatus.value = !gameStatus.value
         }
 
-        const stopGame = async()=>{
-            await sock.value.writeChatMessage(chat.value?.id,{"sent_from":"page_control","content": "stop"})
-            window.location.reload()
+        const toStopGame = async()=>{
+            stopGame()
         }
 
         return {
             gameStatus,
             pauseStartGame,
-            stopGame,
+            toStopGame,
         }
     }
 })

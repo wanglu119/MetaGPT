@@ -13,7 +13,7 @@ from metagpt.environment.base_env_space import BaseEnvObsParams
 from metagpt.environment.werewolf.const import STEP_INSTRUCTIONS, RoleState, RoleType
 from metagpt.environment.werewolf.env_space import EnvAction, EnvActionType
 from metagpt.logs import logger
-
+from metagpt.environment.werewolf.const import RoleType
 
 class WerewolfExtEnv(ExtEnv):
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -162,6 +162,7 @@ class WerewolfExtEnv(ExtEnv):
         use_memory_selection=False,
         new_experience_version="",
         prepare_human_player=Callable,
+        human_player_role_name = "",
     ) -> tuple[str, list]:
         """init players using different roles' num"""
         role_objs = []
@@ -175,7 +176,18 @@ class WerewolfExtEnv(ExtEnv):
         if shuffle:
             random.shuffle(role_objs)
         if add_human:
-            assigned_role_idx = random.randint(0, len(role_objs) - 1)
+            if human_player_role_name != "":
+                if human_player_role_name == RoleType.WEREWOLF.value:
+                    for i, role in enumerate(role_objs):
+                        if role().name == human_player_role_name:
+                            assigned_role_idx = i
+                else:
+                     for i, role in enumerate(role_objs):
+                        if role().name == human_player_role_name:
+                            assigned_role_idx = i
+                            break
+            else:
+                assigned_role_idx = random.randint(0, len(role_objs) - 1)
             assigned_role = role_objs[assigned_role_idx]
             role_objs[assigned_role_idx] = prepare_human_player(assigned_role)  # TODO
 

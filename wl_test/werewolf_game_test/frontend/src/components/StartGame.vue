@@ -41,13 +41,13 @@
         </div>
         </q-dialog>
 
-      <w-game-control-btn />
+      <w-game-control-btn :stopGame="stopGame" />
       
     </q-page>
   </template>
   
   <script lang="ts">
-  import { defineComponent,ref,onUnmounted,provide,computed } from 'vue'
+  import { defineComponent,ref,onUnmounted,provide,computed,Ref } from 'vue'
   import Axios from 'axios'
   
   import {Client,Socket,Session,Channel, ChannelMessage} from "@heroiclabs/nakama-js";
@@ -56,7 +56,8 @@
   import UtilApi from '@/services/util'
 
   import WGameControlBtn from './GameControlBtn.vue'
-  
+  import {GameParam} from './model'
+   
   interface WerewolfMsgContent {
     msg_id:string
     id:string
@@ -80,12 +81,12 @@
         WGameControlBtn,
     },
     setup (props,{attrs}) {
-      const hasHuman = attrs.hasHuman as boolean
-      const channelName = attrs.channelName as string
+      const param = attrs.param as GameParam
+      const channelName = param.channel_name
       const serverNkHostname = UtilApi.GetNkHostname()
       const serverApiHostname = UtilApi.GetApiHostname()
 
-      console.log(hasHuman,'------------------------------------------------')
+      console.log(param,'------------------------------------------------')
 
       const scrollRef = ref<QScrollArea>()
       const useSSL = false; // Enable if server is run with an SSL certificate.
@@ -114,11 +115,7 @@
       const hidden = false
 
       const startGame = async()=>{
-        if(hasHuman) {
-            await Axios.get(`http://${serverApiHostname}:5000/api/human_and_model_player?channelName=${channelName}`)
-        } else {
-            await Axios.get(`http://${serverApiHostname}:5000/api/view_model_player?channelName=${channelName}`)
-        }
+        await Axios.post(`http://${serverApiHostname}:5000/api/start_game`,param)
       }
   
       const auth = async() => {
@@ -192,11 +189,15 @@
           }
         }
       }
-  
-      try{
-        auth()
-      }catch(e) {
-        console.log(e)
+
+      auth()
+
+      const stopGame = async()=>{
+        if(sock.value && chat.value) {
+          console.log("stop game-----------------------------------")
+          await sock.value.writeChatMessage(chat.value?.id,{"sent_from":"page_control","content": "stop"})
+          window.location.reload()
+        }
       }
 
       const toHumanInput = async()=>{
@@ -237,6 +238,7 @@
         toHumanInput,
         gameRoundCnt,
         showHumanInput,
+        stopGame,
       }
     }
   })

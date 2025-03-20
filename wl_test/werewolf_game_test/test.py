@@ -25,7 +25,7 @@ def _send_msg(sock, msg):
     return humanInput
 
 async def start_game(
-    channelName:str,
+    channel_name:str,
     investment: float = 3.0,
     n_round: int = 5,
     shuffle: bool = True,
@@ -34,20 +34,23 @@ async def start_game(
     use_experience: bool = False,
     use_memory_selection: bool = False,
     new_experience_version: str = "",
+    human_player_role_name: str = "",
+    num_werewolf=2,
+    num_villager=2,
 ):
     game = WerewolfGame()
 
     client = NakamaClient('192.168.0.201', 7350, 'defaultkey')
     resp = client.account.authenticate.email("testPython@tusen.ai","password")
     client.session.token = resp["token"]
-    client.session.channelName = channelName
+    client.session.channelName = channel_name
     
     def procControlMsg(msg:dict):
         sentFrom = msg.get("sent_from","")
         if sentFrom == 'page_control':
             content = msg.get('content','')
             game.env.gameStatus = content
-            
+
     sock = NakamaSocket(client=client)
     sock.messageHandles.append(procControlMsg)
 
@@ -67,8 +70,8 @@ async def start_game(
     f = partial(prepare_human_player,sendMsg)
     game_setup, players = game.env.init_game_setup(
         role_uniq_objs=[Villager, Werewolf, Guard, Seer, Witch],
-        num_werewolf=2,
-        num_villager=2,
+        num_werewolf=num_werewolf,
+        num_villager=num_villager,
         shuffle=shuffle,
         add_human=add_human,
         use_reflection=use_reflection,
@@ -76,6 +79,7 @@ async def start_game(
         use_memory_selection=use_memory_selection,
         new_experience_version=new_experience_version,
         prepare_human_player=f,
+        human_player_role_name=human_player_role_name,
     )
     logger.info(f"{game_setup}")
 
@@ -90,7 +94,7 @@ async def start_game(
     
     
 def main(
-    channelName:str,
+    channel_name:str,
     investment: float = 20.0,
     n_round: int = 100,
     shuffle: bool = True,
@@ -99,11 +103,14 @@ def main(
     use_experience: bool = False,
     use_memory_selection: bool = False,
     new_experience_version: str = "",
+    human_player_role_name: str = "",
+    num_werewolf=2,
+    num_villager=2,
 ):
     logger = define_log_level("ERROR")
     asyncio.run(
       start_game(
-          channelName,
+          channel_name,
           investment,
           n_round,
           shuffle,
@@ -112,9 +119,13 @@ def main(
           use_experience,
           use_memory_selection,
           new_experience_version,
+          human_player_role_name,
+          num_werewolf,
+          num_villager,
       )
     )
     
 
 if __name__ == "__main__":
-    main("mychannel",add_human=True)
+    # main("mychannel",add_human=True)
+    Villager.name
