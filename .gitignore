@@ -178,6 +178,7 @@ tests/data/rsp_cache_new.json
 tests/data/serdeser_storage/
 *.tmp
 *.png
+!**/frontend/**/*.png
 htmlcov
 htmlcov.*
 cov.xml
