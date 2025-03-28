@@ -18,6 +18,7 @@ class WerewolfEnv(WerewolfExtEnv, Environment):
     chat: object = Field(default=None)
     gameStatus:str = Field(default="")
     game_round_cnt: int = Field(default=0)
+    promptDict:dict = Field(default={})
 
     def add_roles(self, roles: Iterable["Role"]):
         """增加一批在当前环境的角色

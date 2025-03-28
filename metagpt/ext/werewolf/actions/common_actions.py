@@ -54,19 +54,19 @@ class Speak(Action):
     "HISTORY": "你了解以下对话：__context__",
     "ATTENTION": "你不能投票给现在不活着的玩家！",
     "REFLECTION": "__reflection__",
-    "STRATEGY": __strategy__,
+    "STRATEGY": "__strategy__",
     "PAST_EXPERIENCES": "__experiences__",
-    "MODERATOR_INSTRUCTION": __latest_instruction__,
-    "RULE": "请遵循主持人的最新指示，确定你需要发表意见还是直接投票： 
+    "MODERATOR_INSTRUCTION": "__latest_instruction__",
+    "RULE": '''请遵循主持人的最新指示，确定你需要发表意见还是直接投票： 
         1. 如果指示是发言，请用200字发言。记住你角色的目标，并通过发言实现它； 
-        2. 如果指示是投票，你必须投票，并且只能说‘我投票淘汰PlayerX’，将PlayerX替换为实际玩家姓名，不要包含其他词。",
-        "OUTPUT_FORMAT": {
-            "ROLE": "你的角色，在这种情况下是__profile__",
-            "PLAYER_NAME": "你的名字，在这种情况下是__name__",
-            "LIVING_PLAYERS": "根据 MODERATOR_INSTRUCTION 列出活着的玩家。返回一个JSON列表数据类型。",
-            "THOUGHTS": "根据`MODERATOR_INSTRUCTION`和`RULE`，仔细考虑要说什么或投票，以最大化你作为__profile__获胜的机会。如果在`PAST_EXPERIENCES`中发现类似情况，可以从中汲取教训以优化策略，采取更好的投票行动或改善发言。给出你的逐步思考过程，不超过3步。例如：我的逐步思考过程：...",
-            "RESPONSE": "根据`MODERATOR_INSTRUCTION`、`RULE`和你的‘THOUGHTS’，表达你的意见或投票。"
-        }
+        2. 如果指示是投票，你必须投票，并且只能说‘我投票淘汰PlayerX’，将PlayerX替换为实际玩家姓名，不要包含其他词。''',
+    "OUTPUT_FORMAT": {
+        "ROLE": "你的角色，在这种情况下是__profile__",
+        "PLAYER_NAME": "你的名字，在这种情况下是__name__",
+        "LIVING_PLAYERS": "根据 MODERATOR_INSTRUCTION 列出活着的玩家。返回一个JSON列表数据类型。",
+        "THOUGHTS": "根据`MODERATOR_INSTRUCTION`和`RULE`，仔细考虑要说什么或投票，以最大化你作为__profile__获胜的机会。如果在`PAST_EXPERIENCES`中发现类似情况，可以从中汲取教训以优化策略，采取更好的投票行动或改善发言。给出你的逐步思考过程，不超过3步。例如：我的逐步思考过程：...",
+        "RESPONSE": "根据`MODERATOR_INSTRUCTION`、`RULE`和你的‘THOUGHTS’，表达你的意见或投票。"
+    }
     }
 
     """

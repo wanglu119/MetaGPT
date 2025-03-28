@@ -12,6 +12,9 @@ from metagpt.ext.werewolf.actions import (
     Reflect,
     RetrieveExperiences,
     Speak,
+    Save,
+    Poison,
+    Impersonate
 )
 from metagpt.ext.werewolf.schema import RoleExperience, WwMessage
 from metagpt.logs import logger
@@ -114,6 +117,29 @@ class BasePlayer(Role):
             if self.use_experience
             else ""
         )
+
+        promptDict = self.rc.env.promptDict
+        if isinstance(todo,NighttimeWhispers):
+            if 'NighttimeWhispers' in promptDict:
+                todo.PROMPT_TEMPLATE = promptDict['NighttimeWhispers']['PROMPT_TEMPLATE']
+                todo.STRATEGY = promptDict['NighttimeWhispers']['STRATEGY']
+        if isinstance(todo,Speak):
+            if 'Speak' in promptDict:
+                todo.PROMPT_TEMPLATE = promptDict['Speak']['PROMPT_TEMPLATE']
+                todo.STRATEGY = promptDict['Speak']['STRATEGY']
+        if isinstance(todo,Reflect):
+            if 'Reflect' in promptDict:
+                todo.PROMPT_TEMPLATE = promptDict['Reflect']['PROMPT_TEMPLATE']
+        if isinstance(todo,Impersonate):
+            if 'Reflect' in promptDict:
+                todo.STRATEGY = promptDict['WerewolfImpersonate']['STRATEGY']
+        if isinstance(todo,Poison):
+            if 'Reflect' in promptDict:
+                todo.STRATEGY = promptDict['WitchPoison']['STRATEGY']
+        if isinstance(todo,Save):
+            if 'Reflect' in promptDict:
+                todo.THOUGHTS = promptDict['WitchSave']['THOUGHTS']
+                todo.RESPONSE = promptDict['WitchSave']['RESPONSE']
 
         # 根据自己定义的角色Action，对应地去run，run的入参可能不同
         if isinstance(todo, Speak):

@@ -4,8 +4,9 @@ from flask import Flask, request,jsonify,send_from_directory, render_template
 from flask_cors import CORS
 from jsonschema import validate, ValidationError
 
-from test import main
+from test import main,promptDict
 from metagpt.ext.werewolf.roles import Guard, Moderator, Seer, Villager, Werewolf, Witch
+from metagpt.environment.werewolf.const import STEP_INSTRUCTIONS
 
 app = Flask(__name__,template_folder="./frontend/dist")
 CORS(app)
@@ -53,6 +54,34 @@ def startGame():
     return jsonify({"error": f"Validation failed: {e.message}"}), 400
   except Exception as e:
     return jsonify({"error": str(e)}), 500
+
+@app.route("/api/get_step_instructions",methods=["GET"])
+def get_step_instructions():
+  steps = []
+  for i in range(18):
+    steps.append({
+      'step':i,
+      'content': STEP_INSTRUCTIONS[i]['content']
+    })
+  return jsonify(steps)
+
+@app.route("/api/set_step_instructions",methods=["POST"])
+def set_step_instructions():
+  param = request.get_json()
+  for p in param:
+     STEP_INSTRUCTIONS[p['step']]['content'] = p['content']
+  return jsonify({"status":"ok"})
+
+@app.route("/api/get_prompts",methods=["GET"])
+def get_prompts():
+  return jsonify(promptDict)
+
+@app.route("/api/set_prompts",methods=["POST"])
+def set_prompts():
+  global promptDict
+  param = request.get_json()
+  promptDict = param
+  return jsonify({"status":"ok"})
 
 @app.route("/",methods=["GET"])
 def index():

@@ -4,6 +4,8 @@ from metagpt.ext.werewolf.actions.common_actions import NighttimeWhispers
 
 class Save(NighttimeWhispers):
     name: str = "Save"
+    THOUGHTS:str = "现在是晚上。请返回你决定是否拯救今晚刚被杀的玩家的思考步骤。"
+    RESPONSE:str = "根据主持人的指示，决定你是否想要拯救那个人。返回“Save”或“Pass”。"
 
     def _update_prompt_json(
         self, prompt_json: dict, role_profile: str, role_name: str, context: str, reflection: str, experiences: str
@@ -17,14 +19,14 @@ class Save(NighttimeWhispers):
 
         prompt_json["OUTPUT_FORMAT"][
             "THOUGHTS"
-        ] ="现在是晚上。请返回你决定是否拯救今晚刚被杀的玩家的思考步骤。"
+        ] = self.THOUGHTS
         prompt_json["OUTPUT_FORMAT"][
             "RESPONSE"
         ] = "Follow the Moderator's instruction, decide whether you want to save that person or not. Return SAVE or PASS."
 
         prompt_json["OUTPUT_FORMAT"][
             "RESPONSE"
-        ] = "根据主持人的指示，决定你是否想要拯救那个人。返回“Save”或“Pass”。"
+        ] = self.RESPONSE
 
         return prompt_json
 
